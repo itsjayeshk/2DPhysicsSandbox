@@ -1,0 +1,735 @@
+2D PHYSICS SANDBOX - OOP COURSE PROJECT THEORY
+================================================
+
+Project Title:
+2D Physics Sandbox using C++, SFML, and CMake
+
+
+1. INTRODUCTION
+---------------
+
+This project is a simple 2D Physics Sandbox created as an Object-Oriented Programming
+course project. In this sandbox, the user can spawn basic shapes like circles,
+rectangles, and triangles. These shapes fall down due to gravity and bounce when
+they hit the ground.
+
+The main purpose of this project is not to create a professional physics engine.
+The main purpose is to demonstrate important OOP concepts such as:
+
+- Encapsulation
+- Inheritance
+- Polymorphism
+- Abstraction
+- Composition
+- Operator overloading
+
+The project uses simple physics formulas that are easy to understand and explain.
+
+
+2. TECHNOLOGIES USED
+--------------------
+
+1. C++
+   C++ is used as the main programming language because it supports Object-Oriented
+   Programming very well.
+
+2. SFML
+   SFML stands for Simple and Fast Multimedia Library. It is used to create the
+   window, draw shapes, handle keyboard input, handle mouse input, and display text.
+
+3. CMake
+   CMake is used to build the project. It helps generate build files and compile
+   the project easily.
+
+
+3. MAIN IDEA OF THE PROJECT
+---------------------------
+
+The program opens a 2D window. The user can press keys to create different shapes:
+
+- Press 1 to create a circle
+- Press 2 to create a rectangle
+- Press 3 to create a triangle
+
+After spawning, each object falls downward due to gravity. When the object reaches
+the ground, it bounces upward. The bounce becomes smaller each time because a bounce
+factor is used.
+
+The user can also drag objects with the mouse, delete a selected object, pause the
+simulation, and reset everything.
+
+
+4. PROJECT STRUCTURE
+--------------------
+
+The project has a small and simple structure:
+
+src/
+  main.cpp
+  Game.h / Game.cpp
+  Vector2.h / Vector2.cpp
+  PhysicsBody.h / PhysicsBody.cpp
+  PhysicsObject.h / PhysicsObject.cpp
+  Circle.h / Circle.cpp
+  Rectangle.h / Rectangle.cpp
+  Triangle.h / Triangle.cpp
+
+CMakeLists.txt
+README.md
+VIVA_THEORY.txt
+
+
+5. CLASS DIAGRAM
+----------------
+
+The main inheritance structure is:
+
+PhysicsObject
+|
++-- Circle
++-- Rectangle
++-- Triangle
+
+PhysicsObject is the base class.
+Circle, Rectangle, and Triangle are derived classes.
+
+
+6. ROLE OF EACH CLASS
+---------------------
+
+1. Vector2
+
+Vector2 is a small class used to store x and y values.
+It represents 2D quantities like:
+
+- Position
+- Velocity
+- Acceleration
+
+Example:
+position = (x, y)
+velocity = (x speed, y speed)
+
+The Vector2 class also overloads operators like +, -, and * so vector calculations
+become simple.
+
+Example:
+velocity += acceleration * deltaTime
+position += velocity * deltaTime
+
+
+2. PhysicsBody
+
+PhysicsBody stores the physics data of an object.
+
+It contains:
+
+- position
+- velocity
+- acceleration
+- mass
+
+These data members are private, so they cannot be directly accessed from outside.
+They are accessed through getter and setter methods.
+
+PhysicsBody also has an update function that applies the basic physics equations.
+
+
+3. PhysicsObject
+
+PhysicsObject is the abstract base class for all physics objects.
+
+It contains common behavior and data for all shapes.
+
+It has:
+
+- A PhysicsBody object
+- A selected flag
+- A bounce factor
+- Common update logic
+
+It also has pure virtual functions like:
+
+- draw()
+- containsPoint()
+- getBottom()
+- fixGroundCollision()
+
+These functions are implemented differently by Circle, Rectangle, and Triangle.
+
+Because PhysicsObject has pure virtual functions, we cannot create a direct object
+of PhysicsObject. This makes it an abstract class.
+
+
+4. Circle
+
+Circle inherits from PhysicsObject.
+
+It has:
+
+- radius
+- SFML CircleShape
+
+It implements:
+
+- How to draw a circle
+- How to check whether the mouse clicked inside the circle
+- How to detect its bottom point for ground collision
+
+
+5. Rectangle
+
+Rectangle inherits from PhysicsObject.
+
+It has:
+
+- size
+- SFML RectangleShape
+
+It implements:
+
+- How to draw a rectangle
+- How to check whether the mouse clicked inside the rectangle
+- How to detect its bottom point for ground collision
+
+
+6. Triangle
+
+Triangle inherits from PhysicsObject.
+
+In SFML, a triangle is created using CircleShape with 3 points.
+
+It implements:
+
+- How to draw a triangle
+- How to check whether the mouse clicked near the triangle
+- How to detect its bottom point for ground collision
+
+The triangle collision is intentionally kept simple because this is an OOP project,
+not an advanced physics engine.
+
+
+7. Game
+
+Game is the main controller class.
+
+It handles:
+
+- Creating the SFML window
+- Handling keyboard events
+- Handling mouse events
+- Updating objects
+- Drawing grid, ground, shapes, and text
+- Spawning objects
+- Deleting objects
+- Resetting the simulation
+- Pausing and resuming
+
+The Game class stores objects in this form:
+
+std::vector<std::unique_ptr<PhysicsObject>> objects;
+
+This means the same vector can store circles, rectangles, and triangles using base
+class pointers. This is an example of polymorphism.
+
+
+8. OOP CONCEPTS USED
+--------------------
+
+1. Encapsulation
+
+Encapsulation means wrapping data and functions together inside a class and
+protecting the data from direct access.
+
+In this project, PhysicsBody stores position, velocity, acceleration, and mass as
+private data members.
+
+They are accessed using methods like:
+
+- getPosition()
+- setPosition()
+- getVelocity()
+- setVelocity()
+
+This protects the internal data and keeps the code organized.
+
+
+2. Inheritance
+
+Inheritance means creating a new class from an existing class.
+
+In this project:
+
+Circle inherits from PhysicsObject.
+Rectangle inherits from PhysicsObject.
+Triangle inherits from PhysicsObject.
+
+This avoids repeating common code for every shape.
+
+
+3. Polymorphism
+
+Polymorphism means one interface can have many forms.
+
+In this project, PhysicsObject has virtual functions like draw() and containsPoint().
+Each derived class provides its own version of these functions.
+
+The Game class stores all shapes as PhysicsObject pointers:
+
+std::vector<std::unique_ptr<PhysicsObject>> objects;
+
+When the game calls:
+
+object->draw(window);
+
+the correct draw function is called depending on whether the object is a Circle,
+Rectangle, or Triangle.
+
+This is runtime polymorphism.
+
+
+4. Abstraction
+
+Abstraction means showing only important details and hiding unnecessary complexity.
+
+PhysicsObject is an abstract class. It tells that every physics object must have
+functions like draw(), containsPoint(), getBottom(), and fixGroundCollision().
+
+But it does not define exactly how every shape will do these tasks. The derived
+classes define the details.
+
+
+5. Composition
+
+Composition means one class contains an object of another class.
+
+In this project, PhysicsObject contains a PhysicsBody object.
+
+This means every physics object "has a" physics body.
+
+Example:
+A Circle is a PhysicsObject.
+A Circle has a PhysicsBody.
+
+
+6. Operator Overloading
+
+Operator overloading means giving special meaning to operators for user-defined
+classes.
+
+In this project, Vector2 overloads:
+
++ for vector addition
+- for vector subtraction
+* for multiplying a vector by a number
+
+This makes physics calculations easier to read.
+
+Example:
+
+velocity += acceleration * deltaTime;
+position += velocity * deltaTime;
+
+Without operator overloading, this code would be longer and harder to understand.
+
+
+9. BASIC PHYSICS USED
+---------------------
+
+The physics used in this project is simple motion physics.
+
+Each object has:
+
+- position
+- velocity
+- acceleration
+
+The equations used are:
+
+velocity = velocity + acceleration * deltaTime
+position = position + velocity * deltaTime
+
+In code, it is written as:
+
+velocity += acceleration * deltaTime;
+position += velocity * deltaTime;
+
+
+10. WHAT IS DELTA TIME?
+-----------------------
+
+Delta time is the time passed between two frames.
+
+If we use delta time, the movement becomes smooth and does not depend heavily on
+the speed of the computer.
+
+For example, if a computer is fast or slow, delta time helps keep the physics more
+consistent.
+
+
+11. GRAVITY
+-----------
+
+Gravity is applied as downward acceleration.
+
+In the project:
+
+acceleration = Vector2(0.0f, gravity);
+
+The x acceleration is 0 because gravity does not move objects left or right.
+The y acceleration is positive because in SFML, the y-axis increases downward.
+
+So objects fall down when gravity is applied.
+
+
+12. GROUND COLLISION
+--------------------
+
+Ground collision is kept very simple.
+
+Each shape checks whether its bottom point has reached the ground line.
+
+For example:
+
+- Circle bottom = center y + radius
+- Rectangle bottom = center y + height / 2
+- Triangle bottom = center y + size
+
+If the bottom of the object is below or equal to the ground level, collision is
+detected.
+
+Then the object is moved back to sit exactly on the ground.
+
+
+13. BOUNCING
+------------
+
+When an object hits the ground, its vertical velocity is reversed.
+
+The formula is:
+
+velocity.y = -velocity.y * bounceFactor
+
+The minus sign reverses the direction.
+The bounce factor reduces the speed.
+
+Example:
+If velocity.y is 500 and bounceFactor is 0.55:
+
+new velocity.y = -500 * 0.55 = -275
+
+This makes the object bounce upward, but with less speed than before.
+So after each bounce, the object bounces less and eventually stops.
+
+
+14. WHY ADVANCED PHYSICS IS NOT USED
+------------------------------------
+
+This project does not use:
+
+- Box2D
+- SAT collision
+- impulse solver
+- rotation
+- friction system
+- constraints
+
+These are advanced topics and would make the project difficult to explain.
+
+Since this is a 2nd-year OOP project, the focus is on OOP concepts and simple
+understandable physics.
+
+
+15. GAME LOOP
+-------------
+
+The program uses a standard SFML game loop.
+
+The loop runs while the window is open.
+
+Main steps:
+
+1. Handle events
+2. Update physics
+3. Render graphics
+
+In simple words:
+
+- First, the program checks keyboard and mouse input.
+- Then it updates the position and velocity of all objects.
+- Then it draws the background, grid, ground, shapes, and text.
+
+
+16. USER CONTROLS
+-----------------
+
+1 - Spawn Circle
+2 - Spawn Rectangle
+3 - Spawn Triangle
+R - Reset simulation
+Space - Pause or resume
+Delete - Delete selected object
+Mouse Left Button - Select and drag object
+
+
+17. HOW OBJECT SELECTION WORKS
+------------------------------
+
+When the user clicks the mouse, the program checks whether the click point lies
+inside any object.
+
+Each shape has its own containsPoint() function.
+
+- Circle checks distance from center.
+- Rectangle checks if the point is inside its boundaries.
+- Triangle uses a simple circular area check to keep it easy.
+
+If the object is selected, its outline becomes white and it can be dragged.
+
+
+18. HOW DRAGGING WORKS
+----------------------
+
+When the user selects an object and moves the mouse, the object's position is
+changed to follow the mouse.
+
+While dragging, the object's velocity is set to zero so it does not suddenly fly
+away after releasing the mouse.
+
+
+19. WHY SMART POINTERS ARE USED
+-------------------------------
+
+The project uses:
+
+std::unique_ptr<PhysicsObject>
+
+This is used because objects are created dynamically, and smart pointers
+automatically manage memory.
+
+It avoids manual delete and reduces memory leak risk.
+
+This is still simple enough to explain:
+
+"unique_ptr owns one object and automatically deletes it when it is removed from
+the vector."
+
+
+20. WHY SFML IS USED
+--------------------
+
+SFML makes it easy to:
+
+- Open a window
+- Draw shapes
+- Display text
+- Take keyboard input
+- Take mouse input
+
+We are not using SFML as a physics engine. We are only using it for graphics and
+input.
+
+
+21. POSSIBLE TEACHER QUESTIONS AND ANSWERS
+------------------------------------------
+
+Q1. What is the main aim of your project?
+
+Answer:
+The main aim is to demonstrate OOP concepts using a simple 2D physics sandbox.
+The user can create shapes, and the shapes fall due to gravity and bounce on the
+ground.
+
+
+Q2. Which OOP concepts are used?
+
+Answer:
+The project uses encapsulation, inheritance, polymorphism, abstraction, composition,
+and operator overloading.
+
+
+Q3. Where is inheritance used?
+
+Answer:
+Inheritance is used in the shape classes. Circle, Rectangle, and Triangle inherit
+from the base class PhysicsObject.
+
+
+Q4. Where is polymorphism used?
+
+Answer:
+Polymorphism is used when the Game class stores different shapes as
+PhysicsObject pointers and calls virtual functions like draw() and update().
+The correct function is called depending on the actual object type.
+
+
+Q5. Why is PhysicsObject abstract?
+
+Answer:
+PhysicsObject is abstract because it has pure virtual functions. It represents a
+general physics object, but the exact drawing and collision details depend on the
+specific shape.
+
+
+Q6. Where is encapsulation used?
+
+Answer:
+Encapsulation is used in PhysicsBody and Vector2. Their data members are private,
+and we access them using getter and setter methods.
+
+
+Q7. What is composition in your project?
+
+Answer:
+PhysicsObject contains a PhysicsBody object. This is composition because a physics
+object is made using another class.
+
+
+Q8. Why did you create a Vector2 class?
+
+Answer:
+Vector2 stores x and y values for position, velocity, and acceleration. It also
+uses operator overloading to make vector calculations simple.
+
+
+Q9. Which operators are overloaded?
+
+Answer:
+The +, -, and * operators are overloaded in the Vector2 class.
+
+
+Q10. What physics formula is used?
+
+Answer:
+The formulas are:
+
+velocity += acceleration * deltaTime
+position += velocity * deltaTime
+
+These formulas update the movement of objects.
+
+
+Q11. What is gravity in this project?
+
+Answer:
+Gravity is a constant downward acceleration. It increases the y velocity of each
+object, making it fall downward.
+
+
+Q12. How does bouncing work?
+
+Answer:
+When an object touches the ground, its vertical velocity is reversed and reduced
+using a bounce factor:
+
+velocity.y = -velocity.y * bounceFactor
+
+
+Q13. Why does the object eventually stop bouncing?
+
+Answer:
+Because the bounce factor is less than 1. Each bounce loses some velocity, so the
+bounce height keeps decreasing.
+
+
+Q14. What is delta time?
+
+Answer:
+Delta time is the time between two frames. It makes movement smoother and more
+consistent on different computers.
+
+
+Q15. Why did you not use Box2D or another physics engine?
+
+Answer:
+Because this is an OOP course project. The aim is to understand and explain OOP
+and simple physics ourselves, not to depend on a complex external physics engine.
+
+
+Q16. What does the Game class do?
+
+Answer:
+The Game class controls the whole program. It handles the window, events, input,
+object updates, collision checks, and drawing.
+
+
+Q17. How do you delete an object?
+
+Answer:
+First, the user selects an object with the mouse. Then pressing Delete removes
+that object from the vector of objects.
+
+
+Q18. How do you reset the simulation?
+
+Answer:
+Pressing R clears the vector of objects and removes all shapes from the sandbox.
+
+
+Q19. What is the use of unique_ptr?
+
+Answer:
+unique_ptr manages dynamically created objects automatically. It prevents memory
+leaks because the object is deleted automatically when the pointer is removed.
+
+
+Q20. What is the limitation of your project?
+
+Answer:
+The project only handles simple ground collision. It does not handle object-to-object
+collision, rotation, friction, or advanced physics. This is intentional because the
+project is focused on OOP concepts.
+
+
+22. SHORT VIVA SPEECH
+---------------------
+
+Good morning/afternoon ma'am/sir.
+
+Our project is a 2D Physics Sandbox made using C++, SFML, and CMake. In this
+project, the user can spawn circles, rectangles, and triangles. These objects fall
+because of gravity and bounce when they hit the ground.
+
+The main focus of our project is Object-Oriented Programming. We created an
+abstract base class called PhysicsObject. The classes Circle, Rectangle, and
+Triangle inherit from it. This demonstrates inheritance.
+
+PhysicsObject has virtual functions like draw(), containsPoint(), getBottom(), and
+fixGroundCollision(). Each shape implements these functions differently, so this
+demonstrates polymorphism.
+
+The PhysicsBody class stores position, velocity, acceleration, and mass. These
+variables are private and accessed using getter and setter methods, so this shows
+encapsulation.
+
+Each PhysicsObject contains a PhysicsBody object, so this shows composition.
+
+We also created a Vector2 class for x and y values. It overloads +, -, and *
+operators, which makes physics calculations easier.
+
+The physics is simple. We use:
+
+velocity += acceleration * deltaTime
+position += velocity * deltaTime
+
+Gravity is applied as downward acceleration. When an object touches the ground, its
+vertical velocity is reversed and reduced using a bounce factor. This creates a
+bouncing effect.
+
+We did not use any advanced physics engine because the aim of the project is to
+understand OOP concepts clearly and keep the project simple enough to explain.
+
+
+23. CONCLUSION
+--------------
+
+This project is a simple and understandable demonstration of OOP using a visual
+physics sandbox. It shows how classes, objects, inheritance, polymorphism,
+encapsulation, abstraction, composition, and operator overloading can be used in a
+real program.
+
+The project is easy to demonstrate because the user can spawn shapes, drag them,
+pause the simulation, delete objects, and reset everything.
+
+The project is intentionally simple so that a 2nd-year student can understand,
+modify, and explain it confidently in a viva.
