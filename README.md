@@ -156,10 +156,4 @@ velocity.y = -velocity.y * bounceFactor;
 
 The bounce factor is less than `1`, so every bounce becomes smaller and the object eventually stops.
 
-## Viva Explanation
 
-This project simulates basic falling objects. The base class `PhysicsObject` represents anything that can be updated and drawn. The classes `Circle`, `Rectangle`, and `Triangle` inherit from it and implement their own drawing and mouse selection logic.
-
-The `Game` class runs the SFML window loop. It handles keyboard and mouse input, updates the physics, checks ground collision, and draws everything on the screen.
-
-The physics uses position, velocity, acceleration, and delta time. Gravity increases downward velocity. When the bottom of a shape reaches the ground line, the object is moved back above the ground and its vertical velocity is reversed and reduced to create a bounce.
