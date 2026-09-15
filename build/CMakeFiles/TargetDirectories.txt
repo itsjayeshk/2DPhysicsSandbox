@@ -1,0 +1,3 @@
+C:/Users/kajre/OneDrive/Desktop/College/OOPS/Physics Sandbox/build/CMakeFiles/PhysicsSandbox.dir
+C:/Users/kajre/OneDrive/Desktop/College/OOPS/Physics Sandbox/build/CMakeFiles/edit_cache.dir
+C:/Users/kajre/OneDrive/Desktop/College/OOPS/Physics Sandbox/build/CMakeFiles/rebuild_cache.dir
