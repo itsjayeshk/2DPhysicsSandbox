@@ -20,13 +20,16 @@ public:
     virtual bool containsPoint(const Vector2& point) const = 0;
     virtual float getBottom() const = 0;
     virtual void fixGroundCollision(float groundY) = 0;
+    virtual float getCollisionRadius() const = 0;
 
     Vector2 getPosition() const;
     Vector2 getVelocity() const;
+    float getMass() const;
     bool isSelected() const;
 
     void setPosition(const Vector2& newPosition);
     void setVelocity(const Vector2& newVelocity);
     void setSelected(bool value);
     void stop();
+    void resolveCollision(PhysicsObject& other);
 };

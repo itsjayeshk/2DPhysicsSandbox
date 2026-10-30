@@ -15,4 +15,5 @@ public:
     bool containsPoint(const Vector2& point) const override;
     float getBottom() const override;
     void fixGroundCollision(float groundY) override;
+    float getCollisionRadius() const override { return radius; }
 };

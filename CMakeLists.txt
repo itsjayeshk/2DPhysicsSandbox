@@ -5,7 +5,7 @@ project(PhysicsSandbox LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(SFML 3.1 COMPONENTS Graphics Window System REQUIRED)
+find_package(SFML 3.0 COMPONENTS Graphics Window System REQUIRED)
 
 add_executable(PhysicsSandbox
     src/main.cpp
@@ -15,6 +15,7 @@ add_executable(PhysicsSandbox
     src/Circle.cpp
     src/Rectangle.cpp
     src/Triangle.cpp
+    src/CustomPolygon.cpp
     src/Game.cpp
 )
 

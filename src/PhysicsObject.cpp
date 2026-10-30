@@ -38,6 +38,52 @@ Vector2 PhysicsObject::getVelocity() const
     return body.getVelocity();
 }
 
+float PhysicsObject::getMass() const
+{
+    return body.getMass();
+}
+
+void PhysicsObject::resolveCollision(PhysicsObject& other)
+{
+    const Vector2 difference = other.getPosition() - getPosition();
+    const float distanceSquared = difference.getX() * difference.getX() +
+                                  difference.getY() * difference.getY();
+    // Slightly inset the conservative circular bounds so non-circular shapes
+    // do not get pushed apart while their visible outlines are still far apart.
+    constexpr float collisionBoundsScale = 0.9f;
+    const float minimumDistance =
+        (getCollisionRadius() + other.getCollisionRadius()) * collisionBoundsScale;
+    if (distanceSquared >= minimumDistance * minimumDistance)
+    {
+        return;
+    }
+
+    const float distance = std::sqrt(distanceSquared);
+    const Vector2 normal = distance > 0.001f
+        ? difference * (1.0f / distance)
+        : Vector2(1.0f, 0.0f);
+    const float inverseMassA = 1.0f / getMass();
+    const float inverseMassB = 1.0f / other.getMass();
+    const float inverseMassTotal = inverseMassA + inverseMassB;
+    const float penetration = minimumDistance - distance;
+
+    // Separate the pair in proportion to their inverse mass.
+    setPosition(getPosition() - normal * (penetration * inverseMassA / inverseMassTotal));
+    other.setPosition(other.getPosition() + normal * (penetration * inverseMassB / inverseMassTotal));
+
+    const Vector2 relativeVelocity = other.getVelocity() - getVelocity();
+    const float velocityAlongNormal = relativeVelocity.getX() * normal.getX() +
+                                      relativeVelocity.getY() * normal.getY();
+    if (velocityAlongNormal < 0.0f)
+    {
+        constexpr float restitution = 0.25f;
+        const float impulse = -(1.0f + restitution) * velocityAlongNormal / inverseMassTotal;
+        const Vector2 impulseVector = normal * impulse;
+        setVelocity(getVelocity() - impulseVector * inverseMassA);
+        other.setVelocity(other.getVelocity() + impulseVector * inverseMassB);
+    }
+}
+
 bool PhysicsObject::isSelected() const
 {
     return selected;

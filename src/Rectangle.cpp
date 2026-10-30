@@ -1,5 +1,7 @@
 #include "Rectangle.h"
 
+#include <cmath>
+
 Rectangle::Rectangle(const Vector2& startPosition, const sf::Vector2f& rectangleSize)
     : PhysicsObject(startPosition, 1.4f), size(rectangleSize), shape(rectangleSize)
 {
@@ -38,4 +40,9 @@ void Rectangle::fixGroundCollision(float groundY)
     Vector2 position = getPosition();
     position.setY(groundY - size.y / 2.0f);
     setPosition(position);
+}
+
+float Rectangle::getCollisionRadius() const
+{
+    return std::sqrt(size.x * size.x + size.y * size.y) * 0.5f;
 }

@@ -9,9 +9,9 @@ Project Title:
 ---------------
 
 This project is a simple 2D Physics Sandbox created as an Object-Oriented Programming
-course project. In this sandbox, the user can spawn basic shapes like circles,
-rectangles, and triangles. These shapes fall down due to gravity and bounce when
-they hit the ground.
+course project. In this sandbox, the user can spawn circles, rectangles, and
+triangles, or trace a custom polygon outline with the mouse. Objects fall due to
+gravity and bounce when they hit the ground.
 
 The main purpose of this project is not to create a professional physics engine.
 The main purpose is to demonstrate important OOP concepts such as:
@@ -50,6 +50,8 @@ The program opens a 2D window. The user can press keys to create different shape
 - Press 1 to create a circle
 - Press 2 to create a rectangle
 - Press 3 to create a triangle
+- Press D to enter custom drawing mode, then hold the left mouse button and trace
+  an outline. Release the button to create it; press Escape to cancel.
 
 After spawning, each object falls downward due to gravity. When the object reaches
 the ground, it bounces upward. The bounce becomes smaller each time because a bounce
@@ -73,10 +75,11 @@ src/
   Circle.h / Circle.cpp
   Rectangle.h / Rectangle.cpp
   Triangle.h / Triangle.cpp
+  CustomPolygon.h / CustomPolygon.cpp
 
 CMakeLists.txt
 README.md
-VIVA_THEORY.txt
+THEORY.txt
 
 
 5. CLASS DIAGRAM
@@ -89,9 +92,10 @@ PhysicsObject
 +-- Circle
 +-- Rectangle
 +-- Triangle
++-- CustomPolygon
 
 PhysicsObject is the base class.
-Circle, Rectangle, and Triangle are derived classes.
+Circle, Rectangle, Triangle, and CustomPolygon are derived classes.
 
 
 6. ROLE OF EACH CLASS
@@ -155,7 +159,7 @@ It also has pure virtual functions like:
 - getBottom()
 - fixGroundCollision()
 
-These functions are implemented differently by Circle, Rectangle, and Triangle.
+These functions are implemented differently by each derived shape.
 
 Because PhysicsObject has pure virtual functions, we cannot create a direct object
 of PhysicsObject. This makes it an abstract class.
@@ -466,6 +470,8 @@ In simple words:
 1 - Spawn Circle
 2 - Spawn Rectangle
 3 - Spawn Triangle
+D - Toggle custom drawing mode; hold left mouse and trace an outline
+Escape - Cancel drawing and leave drawing mode
 R - Reset simulation
 Space - Pause or resume
 Delete - Delete selected object
@@ -733,3 +739,218 @@ pause the simulation, delete objects, and reset everything.
 
 The project is intentionally simple so that a 2nd-year student can understand,
 modify, and explain it confidently in a viva.
+
+
+24. CUSTOM DRAWN POLYGON FEATURE
+--------------------------------
+
+The new feature allows a user to draw a custom filled shape with the mouse. Press
+D to switch to drawing mode. Hold the left mouse button, trace the outside boundary,
+and release the button. The program validates the outline and creates a polygon
+physics object if the outline is usable. Press Escape to discard the current trace
+and leave drawing mode.
+
+The preview is shown as a yellow line while drawing. The user can create convex
+shapes (no inward corners) and concave shapes (at least one inward corner). The
+outline must be simple: its boundary cannot cross itself. Very small outlines and
+traces with too many points are rejected with a short status message.
+
+
+25. WHICH CLASSES CHANGED
+-------------------------
+
+Game.h and Game.cpp
+  Game already receives input and owns the object collection. It now stores the
+  current drawing points, switches into and out of drawing mode, filters mouse
+  samples, displays the preview, validates the finished outline, and creates the
+  new object. Coordinates are converted from window pixels to world coordinates.
+
+CustomPolygon.h and CustomPolygon.cpp
+  This is the new derived physics-object class. It stores a list of local vertices
+  and the triangles needed to draw its filled area. It implements the same virtual
+  functions as the built-in shapes: draw(), containsPoint(), getBottom(), and
+  fixGroundCollision().
+
+CMakeLists.txt
+  The new source file is listed in the executable target so it is compiled and
+  linked with the rest of the project.
+
+README.md and THEORY.txt
+  These files describe the new controls, design, algorithms, limitations, and a
+  demonstration/review explanation.
+
+
+26. FROM MOUSE INPUT TO A PHYSICS OBJECT
+----------------------------------------
+
+The process can be understood as a pipeline:
+
+Mouse events -> collected points -> clean/validate boundary -> triangulate fill
+             -> create CustomPolygon -> store as PhysicsObject -> update and draw
+
+Game keeps drawingPoints in the order in which the user traces the boundary. The
+addDrawingPoint() function ignores points outside the usable canvas and skips a new
+point when it is less than five pixels from the last stored point. This prevents
+mouse jitter from creating many nearly identical vertices. The point count is
+capped at 160 so geometry work remains bounded.
+
+When the mouse is released, finishDrawingShape() asks CustomPolygon to validate the
+outline. A failed outline is discarded; it never creates a partly initialized
+object. For success, Game creates CustomPolygon and puts it in the existing
+vector<unique_ptr<PhysicsObject>>. The normal update loop then applies gravity and
+ground response through the base-class interface.
+
+
+27. RIGID GEOMETRY: LOCAL AND WORLD COORDINATES
+-----------------------------------------------
+
+The drawn points initially use world coordinates. When CustomPolygon is created,
+it calculates an anchor by averaging the vertex positions. Each vertex is stored
+relative to this anchor:
+
+localVertex = drawnWorldVertex - anchor
+worldVertex = bodyPosition + localVertex
+
+PhysicsBody stores the anchor position. The local vertices describe the permanent
+shape, while the body position can change due to gravity or dragging. Since all
+vertices receive the same translation, the outline keeps its shape. This is a
+simple example of separating an object's geometry from its transform.
+
+
+28. OUTLINE VALIDATION AND AREA
+-------------------------------
+
+The shoelace formula computes the signed area of a polygon. For a list of vertices,
+the program sums x_i*y_(i+1) - x_(i+1)*y_i around the boundary and divides by two.
+The absolute result is the area used to reject traces that are too small. The sign
+shows whether the points were entered clockwise or counterclockwise.
+
+The outline validator also checks the edge lengths and compares non-adjacent edges
+for intersection. Adjacent edges are expected to meet at their shared endpoint and
+are therefore skipped. A crossing outline is rejected because its inside region
+would be ambiguous for this introductory implementation. Triangulation failure is
+also treated as invalid input.
+
+
+29. TRIANGULATING CONCAVE SHAPES
+-------------------------------
+
+An SFML convex shape is not suitable for rendering every concave outline. A concave
+shape has an inward notch; filling it as one convex polygon could incorrectly cover
+the notch. CustomPolygon instead draws its fill as a group of triangles and draws
+the original boundary as a separate line.
+
+The triangles are produced by ear clipping. The algorithm looks at three
+consecutive remaining vertices. A candidate ear must turn in the direction of the
+polygon's winding and no other remaining point can lie inside its triangle. A valid
+ear is added to the fill and its middle vertex is removed. The algorithm repeats
+until only three vertices remain; those form the last triangle. The winding check
+uses the sign of the polygon area so clockwise and counterclockwise traces both
+work.
+
+The triangle vertices are submitted in an SFML VertexArray using the Triangles
+primitive. A LineStrip renders the boundary, including a final segment back to the
+first point. The geometry is prepared when the object is created and reused while
+drawing, rather than being triangulated every frame.
+
+
+30. POLYGON SELECTION AND GROUND CONTACT
+----------------------------------------
+
+The point-in-polygon test uses ray casting. Imagine a ray extending right from the
+mouse click. Each time it crosses an edge, the inside flag is toggled. If the flag
+is true after checking all edges, the click is inside the polygon. This correctly
+excludes empty areas inside a concave shape's bounding rectangle.
+
+The screen's y coordinate grows downward. Therefore the lowest polygon vertex has
+the largest local y coordinate. getBottom() finds that vertex and adds the body's y
+position. If the bottom passes the ground line, fixGroundCollision() moves the
+polygon upward by the overlap. The inherited PhysicsObject update then reverses and
+reduces vertical velocity using the same bounce factor used by other shapes.
+
+
+31. EXACT SCOPE OF THE WORD "SOLID"
+-----------------------------------
+
+The custom polygon is filled on screen and its geometry remains rigid while it
+moves. It responds to gravity and the ground. However, this project does not detect
+or resolve collisions between objects. A polygon may pass through another polygon,
+circle, rectangle, or triangle. The built-in objects have the same limitation.
+
+Object-to-object collisions are a separate extension. A common method for convex
+polygons is the Separating Axis Theorem (SAT). Concave shapes would first need to
+be divided into convex parts, or use a different collision approach. This feature
+does not claim those interactions are already implemented.
+
+
+32. FEATURE DEMONSTRATION FOR REVIEW
+------------------------------------
+
+1. Start the program and press D. The instruction text changes to show drawing mode.
+2. Hold the left mouse button and trace a large square, triangle, or concave L.
+3. Release the button. A valid custom polygon appears filled and begins falling.
+4. Click inside its colored area and drag. The shape moves without changing form.
+5. Let it reach the ground and observe the bounce.
+6. Select it and press Delete. Press R to clear all objects.
+7. Draw a tiny outline or a boundary that crosses itself. The trace should be
+   rejected and the status line should explain why.
+8. Begin drawing and press Escape to cancel the trace and exit drawing mode.
+
+
+33. REVIEW QUESTIONS ABOUT THE NEW FEATURE
+------------------------------------------
+
+Q1. How does the user draw a custom shape?
+
+Answer: Press D, trace the outline while holding the left mouse button, then release.
+Game collects the points and creates a CustomPolygon after validation.
+
+Q2. Why is CustomPolygon derived from PhysicsObject?
+
+Answer: It can use the same body, gravity, bounce, selection state, and object list.
+It supplies its own implementations of drawing, point selection, and ground logic.
+
+Q3. Why store vertices relative to an anchor?
+
+Answer: The vertices describe fixed geometry and PhysicsBody stores the moving
+position. Adding the body's position to a local vertex gives its current world
+position, so the whole outline can move as one rigid object.
+
+Q4. Why split a concave shape into triangles?
+
+Answer: A convex polygon renderer may incorrectly fill a concave notch. Triangles
+can represent the concave filled region accurately. Ear clipping finds those
+triangles from the boundary.
+
+Q5. How are mouse clicks tested against a concave outline?
+
+Answer: Ray casting counts crossings of polygon edges. An odd number means the
+point is inside; an even number means it is outside.
+
+Q6. How does the custom polygon touch the ground?
+
+Answer: It finds its lowest vertex, compares that world y coordinate with the
+ground, shifts upward to remove overlap, then uses the base class bounce response.
+
+Q7. Do custom shapes collide with other objects?
+
+Answer: No. The current project handles gravity and ground contact only. Object
+collision detection and response would be a separate feature.
+
+
+34. SHORT UPDATED VIVA SPEECH
+-----------------------------
+
+Our project is a 2D Physics Sandbox made using C++, SFML, and CMake. We can spawn
+circles, rectangles, and triangles, and now we can draw custom polygon shapes with
+the mouse. Game collects and validates the outline, then creates a CustomPolygon
+derived from PhysicsObject. This lets the new shape use the same polymorphic object
+collection and update loop as the built-in shapes.
+
+CustomPolygon stores its vertices relative to an anchor, which keeps its geometry
+rigid while its body moves. It uses ear clipping to draw concave filled shapes,
+ray casting to select a point inside the actual outline, and its lowest vertex to
+respond to the ground. The physics remains intentionally introductory: objects
+fall and bounce on the ground, but they do not collide with one another. The feature
+demonstrates inheritance, polymorphism, encapsulation, geometry algorithms, and
+event-driven input in one understandable example.

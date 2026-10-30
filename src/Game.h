@@ -20,6 +20,13 @@ private:
     bool dragging;
     bool paused;
     bool fontLoaded;
+    bool drawingShape;
+    bool drawingStroke;
+    bool gravityEnabled;
+    bool airResistanceEnabled;
+    bool frictionEnabled;
+    std::vector<Vector2> drawingPoints;
+    std::string drawingMessage;
 
     const unsigned int windowWidth;
     const unsigned int windowHeight;
@@ -33,8 +40,12 @@ private:
     void spawnCircle();
     void spawnRectangle();
     void spawnTriangle();
+    void finishDrawingShape();
+    void cancelDrawingShape();
+    void addDrawingPoint(const Vector2& point);
     void reset();
     void deleteSelectedObject();
+    void pushSelectedObject();
 
     void selectObjectAt(const Vector2& mousePosition);
     void dragSelectedObject(const Vector2& mousePosition);
@@ -42,6 +53,7 @@ private:
     void drawGrid();
     void drawGround();
     void drawText();
+    void drawShapePreview();
     void drawTextLine(const std::string& text, float x, float y, unsigned int size = 16);
 
 public:
