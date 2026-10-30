@@ -4,9 +4,14 @@ This is a simple C++ and SFML project made for a 2nd-year Object-Oriented Progra
 
 The project is intentionally small and easy to explain. It does not use Box2D or any advanced physics engine.
 
+Custom outlines may be concave or convex, but must be a single non-self-crossing
+polygon. All objects use the project's simple gravity and ground response. Objects
+do not collide with one another.
+
 ## Features
 
 - Spawn circles, rectangles, and triangles.
+- Draw and create custom concave or convex polygon shapes with the mouse.
 - Gravity pulls every object downward.
 - Objects bounce when they hit the ground.
 - Select and drag objects using the mouse.
@@ -21,10 +26,16 @@ The project is intentionally small and easy to explain. It does not use Box2D or
 | `1` | Spawn circle |
 | `2` | Spawn rectangle |
 | `3` | Spawn triangle |
+| `D` | Toggle custom drawing mode; drag with the left mouse button to draw |
+| `Escape` | Cancel the current outline and leave drawing mode |
 | `Mouse Left Button` | Select and drag object |
 | `Delete` | Delete selected object |
 | `Space` | Pause or resume |
 | `R` | Reset simulation |
+
+To draw a custom shape, press `D`, hold the left mouse button, trace the outline,
+and release. Press `Escape` to cancel drawing. The sandbox rejects tiny, overly
+complex, or self-crossing outlines.
 
 ## How to Build and Run
 
@@ -65,6 +76,7 @@ src/
   Circle.h / Circle.cpp
   Rectangle.h / Rectangle.cpp
   Triangle.h / Triangle.cpp
+  CustomPolygon.h / CustomPolygon.cpp
 CMakeLists.txt
 README.md
 ```
@@ -77,6 +89,7 @@ PhysicsObject (abstract base class)
 +-- Circle
 +-- Rectangle
 +-- Triangle
++-- CustomPolygon
 ```
 
 `Game` owns a list of physics objects:
